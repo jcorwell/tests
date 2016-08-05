@@ -1,0 +1,971 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"weight",
+				"weight_type	param"
+			],
+			[
+				"set_pick",
+				"set_pickradius	function"
+			],
+			[
+				"get_off",
+				"get_offset_position	function"
+			],
+			[
+				"facecol",
+				"get_facecolors"
+			],
+			[
+				"raster",
+				"raster_ax	param"
+			],
+			[
+				"bottom",
+				"bottom_plot"
+			],
+			[
+				"exponen",
+				"exponential_triple	function"
+			],
+			[
+				"corenrs",
+				"corners_big	statement"
+			],
+			[
+				"histo",
+				"histogram2d	function"
+			],
+			[
+				"KN",
+				"KNeighborsClassifier	class"
+			],
+			[
+				"OL_",
+				"OL_dict_high	statement"
+			],
+			[
+				"OL_di",
+				"OL_dict_low	statement"
+			],
+			[
+				"CL_dic",
+				"CL_dict_low	statement"
+			],
+			[
+				"plot",
+				"plot_dict	statement"
+			],
+			[
+				"plo",
+				"plot_dict	statement"
+			],
+			[
+				"wavefo",
+				"waveform_high	statement"
+			],
+			[
+				"waveform",
+				"waveform_low	statement"
+			],
+			[
+				"raw_",
+				"raw_freq_high"
+			],
+			[
+				"set_",
+				"set_ylabel"
+			],
+			[
+				"exports",
+				"exports_dir"
+			],
+			[
+				"pass",
+				"passed_idx"
+			],
+			[
+				"old",
+				"old_ups"
+			],
+			[
+				"all",
+				"all_new_notes"
+			],
+			[
+				"projec",
+				"project_title"
+			],
+			[
+				"ALI",
+				"ALIGN_CENTER"
+			],
+			[
+				"ALIGN",
+				"ALIGN_LEFT"
+			],
+			[
+				"tti",
+				"txt_title"
+			],
+			[
+				"vix",
+				"vix0"
+			],
+			[
+				"AL",
+				"ALIGN_CENTER"
+			],
+			[
+				"hsi",
+				"hsize2"
+			],
+			[
+				"Add",
+				"AddSectionButton"
+			],
+			[
+				"scroll",
+				"scrolled_panel"
+			],
+			[
+				"newH",
+				"new_h2"
+			],
+			[
+				"scrol",
+				"scrolled_panel"
+			],
+			[
+				"access",
+				"accessibility"
+			],
+			[
+				"get",
+				"GetCellValue"
+			],
+			[
+				"add_",
+				"add_row_b"
+			],
+			[
+				"crea",
+				"create_titles"
+			],
+			[
+				"hsize",
+				"hsize3"
+			],
+			[
+				"FOld",
+				"FoldTitle"
+			],
+			[
+				"Wavef",
+				"WaveformImpButton"
+			],
+			[
+				"bdist",
+				"bdist_msi_options"
+			],
+			[
+				"thre",
+				"thresh_slider"
+			],
+			[
+				"Prefe",
+				"PreferencesDialog"
+			],
+			[
+				"delim",
+				"do_delims"
+			],
+			[
+				"trainnig",
+				"trainingLabels"
+			],
+			[
+				"trainni",
+				"trainingData"
+			],
+			[
+				"_gmm",
+				"_gmm_labels"
+			],
+			[
+				"_kmean",
+				"_kmeans_labels"
+			],
+			[
+				"On",
+				"on_add_file"
+			],
+			[
+				"data_",
+				"data_title2"
+			],
+			[
+				"data_tit",
+				"data_title1"
+			],
+			[
+				"labels",
+				"labels_title1"
+			],
+			[
+				"thresh",
+				"thresh_choice"
+			],
+			[
+				"thresh_",
+				"thresh_title"
+			],
+			[
+				"clu",
+				"clustering"
+			],
+			[
+				"prin",
+				"printscreen_pil"
+			],
+			[
+				"prinst",
+				"printscreen_numpy"
+			],
+			[
+				"print",
+				"printscreen_numpy"
+			],
+			[
+				"fore",
+				"foreground_window"
+			],
+			[
+				"kurt",
+				"kurtA"
+			],
+			[
+				"cosine",
+				"cosine_sim"
+			],
+			[
+				"save_",
+				"save_thread"
+			],
+			[
+				"n_err",
+				"n_error_test"
+			],
+			[
+				"n_er",
+				"n_error_train"
+			],
+			[
+				"y_red",
+				"y_pred_test"
+			],
+			[
+				"da",
+				"davies_bouldin_index"
+			],
+			[
+				"alg",
+				"alglist"
+			],
+			[
+				"re",
+				"responses"
+			],
+			[
+				"cluste",
+				"cluster_match"
+			],
+			[
+				"inter",
+				"interp_val"
+			],
+			[
+				"still_",
+				"still_puns"
+			],
+			[
+				"max_",
+				"max_reward"
+			],
+			[
+				"move_pun",
+				"move_pun0"
+			],
+			[
+				"move_",
+				"move_pun0"
+			],
+			[
+				"wav",
+				"waveform_names"
+			],
+			[
+				"wave",
+				"waveform_x"
+			],
+			[
+				"save_an",
+				"save_anim"
+			],
+			[
+				"selec",
+				"selected_labels"
+			],
+			[
+				"ffm",
+				"ffmpeg_anim"
+			],
+			[
+				"Axes",
+				"Axes3D"
+			],
+			[
+				"selected",
+				"selected_projection"
+			],
+			[
+				"Process",
+				"ProcessPlotter"
+			],
+			[
+				"save_anim",
+				"save_anim_run"
+			],
+			[
+				"dra",
+				"draw_artist"
+			],
+			[
+				"frame",
+				"frame_no"
+			],
+			[
+				"legen",
+				"legend_hands"
+			],
+			[
+				"proje",
+				"projected"
+			],
+			[
+				"n",
+				"nr_classes"
+			],
+			[
+				"label",
+				"labelled_data"
+			],
+			[
+				"labe",
+				"labelled_data"
+			],
+			[
+				"training",
+				"trainingData"
+			],
+			[
+				"trainin",
+				"trainingMeans"
+			],
+			[
+				"alg_",
+				"alg_choice"
+			],
+			[
+				"lb_",
+				"lb_cond"
+			],
+			[
+				"lb_cond",
+				"lb_condarr"
+			],
+			[
+				"list",
+				"listCtrl"
+			],
+			[
+				"file",
+				"filenames"
+			],
+			[
+				"E",
+				"EXPAND"
+			],
+			[
+				"event",
+				"event_times_list"
+			],
+			[
+				"even",
+				"event_times_list"
+			],
+			[
+				"loa",
+				"loadtxt"
+			],
+			[
+				"current",
+				"current_neuron_range"
+			],
+			[
+				"class",
+				"class_label"
+			],
+			[
+				"Elli",
+				"EllipsoidTool"
+			],
+			[
+				"proe",
+				"projected_class"
+			],
+			[
+				"plot_ell",
+				"plot_ellipsoid_3d"
+			],
+			[
+				"matp",
+				"matplotize_colors"
+			],
+			[
+				"neur",
+				"neur_box"
+			],
+			[
+				"li",
+				"listCtrl"
+			],
+			[
+				"data",
+				"data_arr"
+			],
+			[
+				"fil",
+				"filenames"
+			],
+			[
+				"import",
+				"import_files"
+			],
+			[
+				"IMp",
+				"import_files"
+			],
+			[
+				"impor",
+				"import_files"
+			],
+			[
+				"imor",
+				"import_files"
+			],
+			[
+				"Radio",
+				"RadioTitle"
+			],
+			[
+				"app",
+				"apply_asyn"
+			],
+			[
+				"eli",
+				"eliteProportion"
+			],
+			[
+				"Hill",
+				"HillClimber"
+			],
+			[
+				"hill",
+				"hillclimber_nn"
+			],
+			[
+				"Expi",
+				"EpisodicExperiment"
+			],
+			[
+				"Neural",
+				"NeuralNetwork"
+			],
+			[
+				"Neu",
+				"NeuralNetwork"
+			],
+			[
+				"y_thre",
+				"y_thresh_2"
+			],
+			[
+				"sleep",
+				"sleep_val"
+			],
+			[
+				"init_",
+				"init_max_search"
+			],
+			[
+				"abs",
+				"abs_func"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 104.0,
+		"last_filter": "install",
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 400.0
+	},
+	"console":
+	{
+		"height": 153.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/Robbie/Downloads/Hopfield (6).py",
+		"/C/Users/Robbie/Downloads/Hopfield (7).py",
+		"/C/Users/Robbie/Google Drive/Neuroscience/Remus Lab/HopfieldNet/Hopfield.py",
+		"/C/Users/Robbie/Downloads/Hopfield (1).py",
+		"/C/Users/Robbie/Downloads/Hopfield (2).py",
+		"/C/Users/Robbie/Downloads/Hopfield (3).py",
+		"/C/Users/Robbie/Downloads/Hopfield (4).py",
+		"/C/Users/Robbie/Downloads/Hopfield (5).py",
+		"/C/Users/Robbie/Downloads/Hopfield.py",
+		"/C/Users/Robbie/Desktop/HopfieldNet/Hopfield.py",
+		"/C/Users/Robbie/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/Robbie/Desktop/Hopfield.py",
+		"/C/Users/Robbie/Desktop/waveform_times.txt",
+		"/C/Users/Robbie/Documents/GitHub/robcapps.com/styles/style.css",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/sine_waves.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/sines2evt.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/Test Sines Evt/sine_evt4_1.00.txt",
+		"/C/Python27_64bit/lib/site-packages/matplotlib/artist.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/freqgui.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/viz_save.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/utils.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/waveform_convert.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/smoothing.py",
+		"/C/Users/Robbie/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/Robbie/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/Robbie/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/LEV/waveform_5000.txt",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/LEV/waveform_1000.txt",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/LEV/waveform_names.json",
+		"/C/Python27_64bit/lib/site-packages/numpy/lib/arraysetops.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/sinecorners_old.txt",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/fitz.txt",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/lorenz.txt",
+		"/C/Users/Robbie/Downloads/fill_between_demo.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/find_trajectories.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/tajectory_func.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/extimports.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/test_sine.txt",
+		"/C/Users/Robbie/Desktop/2011-11-06 PDF/CBCO/pdict.json",
+		"/C/Users/Robbie/Desktop/CBCO/_normalized_freq.txt",
+		"/C/Users/Robbie/AppData/Local/Temp/Temp1_pycurve-1.0.2.zip/pycurve-1.0.2/pycurve/__init__.py",
+		"/C/Users/Robbie/AppData/Roaming/Sublime Text 3/Packages/Anaconda/Anaconda.sublime-settings",
+		"/C/Users/Robbie/Desktop/CBCO/waveform_names.json",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/CBCO/Event_times.csv",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/CBCO/Event_times_old.csv",
+		"/C/Users/Robbie/Desktop/CBCO/Event_times.csv",
+		"/C/Users/Robbie/Downloads/fill_between_demo (1).py",
+		"/C/Users/Robbie/Google Drive/Old Schoolwork - 2013&2014/Foundations of Dynamical Neuroscience/Notes/notes2.txt",
+		"/C/Users/Robbie/Google Drive/Old Schoolwork - 2013&2014/Foundations of Dynamical Neuroscience/Notes/notes1.txt",
+		"/C/Users/Robbie/Google Drive/OMSCS/Machine Learning/Code Snippets/HillClimber.py",
+		"/C/Users/Robbie/Downloads/fill_betweenx_demo.py",
+		"/C/Users/Robbie/Desktop/2011-11-06 PDF/CBCO/info.txt",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/visualize.py",
+		"/C/Python27_64bit/lib/site-packages/matplotlib/__init__.py",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/CBCO/pdat_labels.txt",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/CBCO/_normalized_freq.txt",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/CBCO/waveform.txt",
+		"/C/Users/Robbie/Desktop/Data/rename.py",
+		"/C/Users/Robbie/Desktop/Data/20111106K-data/ALL/Event_times.csv",
+		"/C/Users/Robbie/Desktop/JRT.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/withnewsect/withnewsect.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/withnewsect/withnewsect.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_New Section.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_References.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_Introduction.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_Summary.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/cp_data.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/main_gui.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/create_template_old_.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/create_template_old.py",
+		"/C/Users/Robbie/Google Drive/FFN-Energy/data.txt",
+		"/C/Users/Robbie/Google Drive/FFN-Energy/open_mat.py",
+		"/C/Users/Robbie/Google Drive/FFN-Energy/volterra.py",
+		"/C/Users/Robbie/Google Drive/FFN-Energy/MLP.py",
+		"/C/Users/Robbie/Desktop/Projects/BP_Project/Code/import_image.py",
+		"/C/Users/Robbie/Desktop/Projects/BP_Project/Code/analyze.py",
+		"/C/Users/Robbie/Desktop/Projects/BP_Project/Code/NTM.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/mathtext_wx.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/3d_dtcwt_directionality.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/load_big_data.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/Soup.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/unique_filenames.py",
+		"/C/Users/Robbie/Google Drive/Quick Scripts/change_wallpaper.py",
+		"/C/AdwCleaner/AdwCleaner[S3].txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_002.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_001.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject2/NewProject2.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject2/NewProject2.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary_001.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary_002.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary_003.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary_004.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary_005.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_003.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_006.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_008.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_New Section_007.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_New Section2.txt",
+		"/C/Python27_64bit/Lib/site-packages/wx-3.0-msw/wx/lib/mixins/listctrl.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_History.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_Drilling.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tag_replace.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/CompanionPolicy.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tex2jinja.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/import_tex.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/imports.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_Summary.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/_base_template/base_template.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_002.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_001.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_003.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_002.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_001.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/custom_templates/NewProject1/NewProject1_000.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/modified_tex/jinja-report-out-BT-report.tex",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/csvread.py",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/templates/BT-report.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/modified_csvs/BT-report.csv",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/notes/notes_Accessibility, Climate, Local Resources, Infrastructure and Physiography.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/tmp_txt/txt_2016-06-27_Drilling.txt",
+		"/C/Users/Robbie/Google Drive/Dad_Rob Project/_RockyBranches/gui/create_template.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/importfiles.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/labeldata.py",
+		"/C/Users/Robbie/Documents/GitHub/pca-mda-animation/freqpy/waveform_entry.py",
+		"/C/AdwCleaner/AdwCleaner[C2].txt"
+	],
+	"find":
+	{
+		"height": 40.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"self.__var[\"x\"]",
+			"var_getter",
+			"tee",
+			"izip",
+			"print",
+			"levdir",
+			"labels",
+			"dist_",
+			"imap",
+			"axz",
+			"cnt",
+			"imgpath",
+			"npd",
+			"error",
+			"wv_c",
+			"1000",
+			"self.temps",
+			"self.csv_name",
+			"self.main_idx",
+			"update_policy",
+			"pop",
+			"self.cp_sections",
+			"TIMESTAMP",
+			"update_poli",
+			"self.",
+			"())\n",
+			"GetText",
+			"message",
+			"()    ",
+			"\\section{d",
+			"Deposit",
+			"mineral Reserve estimates",
+			"mineral reserves",
+			"encode",
+			"Reliance on Oth",
+			"create_texgen",
+			"’",
+			"replace('\\n', '\\n%')",
+			"Sections.append",
+			"8",
+			"grid_to_graph",
+			"_libfann",
+			"neural_net_test",
+			"add_row_b",
+			"Windows",
+			"in_args",
+			"waveforms",
+			"i",
+			"res",
+			"testLabels",
+			"trainingLabels",
+			"trainingData",
+			"()\n",
+			"SETTINGS",
+			"MyProgress",
+			"bracket",
+			"tab",
+			"get_waveform_names",
+			"dbi",
+			"pub",
+			"Ellip",
+			"plot_selected",
+			"tmp",
+			"3f",
+			"class_crea",
+			"labels",
+			"class_creation",
+			"'Data'",
+			"'./Data/'",
+			" )",
+			"create_listbox",
+			"self.data_arr.keys()[ii].split('_')[0]",
+			"self.t",
+			"self.cond_arr.keys()[ii].split('\\\\')[-1].split('_')[0]",
+			"self.data_arr.keys()[ii].split('\\\\')[-1].split('_')[0]",
+			"axes2.scatter",
+			"wave_labels",
+			"waveform",
+			"0.000	",
+			",",
+			"\\n",
+			"1",
+			"last_labs",
+			"init_func",
+			"self.",
+			"self.axes",
+			"last_center",
+			"xyz_labs",
+			"prev_labs",
+			"isStochastic",
+			"xyz_labs",
+			"centers",
+			"classes",
+			"in",
+			"],",
+			"1",
+			"))\n",
+			"X",
+			"nr_classes",
+			"fig",
+			"3",
+			" =",
+			"')",
+			"])\n",
+			")\n",
+			"finish",
+			"cleanup",
+			"clear_temp",
+			"grab_frame",
+			"saving",
+			"cleanup",
+			"reset",
+			"pause",
+			"_blit_draw",
+			"on_redraw_timer",
+			"flash_status_message",
+			"redraw",
+			"tile",
+			"projected_class",
+			")\n",
+			"pylab",
+			"elitism",
+			"Error",
+			"*",
+			"X",
+			"*",
+			"())\n",
+			"FileReader"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"self.CP.update_policy(self.itemDataMap)",
+			"DBI",
+			"self.data_dir",
+			"curr_cond",
+			"curr_dat",
+			"",
+			"axes",
+			"gold_X",
+			"7",
+			"0",
+			"",
+			"func",
+			"X_train, y_train, X_test, y_test, elem = data_list",
+			"X, y, elem = data_list"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 36.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 265.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/Python/Python.sublime-build",
+	"project": "HopfieldNet.sublime-project",
+	"replace":
+	{
+		"height": 68.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 311.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
