@@ -19,8 +19,7 @@ except NameError:
     pass
 
 Horse = rgb2grey(data.horse())
-# cue1 = random_noise(Horse, mode="speckle", var=0.01)
-# cue1 = data.astronaut()
+
 
 class HopfieldNetwork:
     def __init__(self, **kwargs):
@@ -28,16 +27,16 @@ class HopfieldNetwork:
                       "x": None,
                       "cue": None,
                       "weight_type": "pearson",
-                      "gamma": 0.05,
+                      "gamma": 0.30,
                       "tau": 1.00,
-                      "S_hebb": 0.80,
+                      "S_hebb": 0.20,
                       "D_fact": 0.15,
                       "s0": 1.0,
                       "time_to_recall": 1.00,
                       "format": "img_bin",
                       "verbose": 0,
                       "cue_update": "mon_incr",
-                      "shape": (20, 20),
+                      "shape": (50, 50),
                       "anim": True,
                       "atol": 1.49012e-8}
         self.__onstart(kwargs)
@@ -92,7 +91,7 @@ class HopfieldNetwork:
 
     def __integrate(self):
         # starting place
-        I0 = self.CueModifier(0.1)
+        I0 = self.CueModifier(0.0)
         timespace = self.timespace
         memory_ = odeint(self.__iter, I0.flatten(), timespace, atol=self._get("atol"))
         self.memories.extend(list(map(lambda mem: mem.reshape(self._get("x").shape), memory_)))
@@ -152,6 +151,7 @@ class HopfieldNetwork:
             s0 = self.H._get("s0")
             T_new = self.H.MID(curr_u) + self.H.HLP(curr_u)
             self.W += -self.H._get("gamma")*self.W + T_new
+            self.W = np.nan_to_num(self.W)
             self.W[self.W > s0] = s0
             self.W[self.W < -s0] = -s0
             return self.W
@@ -160,6 +160,7 @@ class HopfieldNetwork:
             s0 = self.H._get("s0")
             w = getattr(self, self.wtype)()
             w[np.diag_indices_from(w)] = 0
+            w = np.nan_to_num(w)
             w[w > s0] = s0
             w[w < -s0] = -s0
             setattr(self.H, 'W', w)
@@ -228,9 +229,10 @@ class HopfieldNetwork:
 
 
 if __name__ == '__main__':
-    hn = HopfieldNetwork(x=data.astronaut(), cue=data.horse())
-    hn.train(train_time=1.0, cue=data.horse())
-    hn.expose(expose_time=10.0, cue=data.astronaut())
+    hn = HopfieldNetwork(x=data.horse(), cue=data.astronaut())
+    hn.train(train_time=1.0, cue=data.astronaut())
+    hn.expose(expose_time=5.0, cue=data.horse())
+    hn.expose(expose_time=5.0, cue=data.astronaut())
     cnt = 0
     for mem in hn.memories:
         fig = plt.figure()
