@@ -9,7 +9,10 @@ from skimage.color import rgb2grey
 from skimage.transform import resize
 import gc
 import time
-import multiprocessing as mp
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from rscripts.Plot.Arrow3D import Arrow3D
 
 try:
     __IPYTHON__
@@ -36,7 +39,7 @@ class HopfieldNetwork:
                       "format": "img_bin",
                       "verbose": 0,
                       "cue_update": "mon_incr",
-                      "shape": (50, 50),
+                      "shape": (10, 10),
                       "anim": True,
                       "atol": 1.49012e-8}
         self.__onstart(kwargs)
@@ -52,6 +55,8 @@ class HopfieldNetwork:
         self.__format_input()
         self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         self.memories = []
+        self.Is = []
+        self.Us = []
 
     def __update_options(self, kwargs):
         self.__var.update(kwargs)
@@ -78,8 +83,10 @@ class HopfieldNetwork:
             self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         if cue is not None:
             cue_reshape = rgb2grey(resize(cue, self._get("shape")))
-            self.update_params({"cue": cue_reshape}) # "x": cue_reshape, 
+            self.update_params({"cue": cue_reshape}) # "x": cue_reshape,
+        self.Is.append(self._get("cue"))
         self.__integrate()
+        self.Us.append(self.memories[-1])
 
     def expose(self, cue, expose_time=None):
         if expose_time is not None:
@@ -87,7 +94,9 @@ class HopfieldNetwork:
             self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         new_cue = rgb2grey(resize(cue, self._get("shape")))
         self.update_params({"cue": new_cue, "x": new_cue})
+        self.Is.append(self._get("cue"))
         self.__integrate()
+        self.Us.append(self.memories[-1])
 
     def __integrate(self):
         # starting place
@@ -105,6 +114,48 @@ class HopfieldNetwork:
         if self._get("verbose") >= 2:
             print(self.W.min(), self.W.max(), self.W.mean())
         return du_.flatten()
+
+    def __scatter(self):
+        shp = self._get("shape")[0]
+        X = np.array(self.Is)
+        X = X.reshape((len(self.Is), shp, shp))
+        S_b = np.array(list(map(lambda I_i: np.transpose(I_i - X.mean(0), axes=[0, 2, 1]) * (I_i - X.mean(0)), X))).sum(0)
+        S_b = np.nan_to_num(S_b)
+        S_b = (S_b - S_b.mean(0)) / S_b.std(0)
+        S_b = np.nan_to_num(S_b)
+        return S_b
+
+    def __energy(self):
+        u = np.array(self.Us)
+        E = -0.5*((self.W*u*np.transpose(u, axes=[0, 2, 1])).sum(2)) + 0.5*np.sum(u, axis=1)
+        E = np.nan_to_num(E)
+        E = (E - E.mean(0)) / E.std(0)
+        E = np.nan_to_num(E)
+        return E
+
+    def energy_landscape(self, plot=False):
+        S_b = self.__scatter()
+        E = self.__energy()
+        pca = PCA(n_components=2)
+        S_bpr = pca.fit_transform(S_b)
+        outs = [S_bpr, E]
+        if plot is True:
+            ax = plt.subplot(projection='3d')
+            l = np.column_stack([S_bpr, E.mean(0)])
+            colors = l[:, 2]
+            ax.scatter(l[:, 0], l[:, 1], l[:, 2], c=colors)
+            for ix in range(l.shape[0]-1):
+                lx, ly, lz = l[ix, :]
+                lx1, ly1, lz1 = l[ix+1, :]
+                arr = Arrow3D([lx, lx1],
+                              [ly, ly1],
+                              [lz, lz1],
+                              arrowstyle='-|>',
+                              mutation_scale=20,
+                              color='k')
+                ax.add_artist(arr)
+            outs.append(ax)
+        return outs
 
     def HLP(self, curr_u):
         S_hebb = self._get("S_hebb")
@@ -233,11 +284,12 @@ if __name__ == '__main__':
     hn.train(train_time=1.0, cue=data.astronaut())
     hn.expose(expose_time=5.0, cue=data.horse())
     hn.expose(expose_time=5.0, cue=data.astronaut())
-    cnt = 0
-    for mem in hn.memories:
-        fig = plt.figure()
-        im = plt.imshow(mem, cmap="jet")
-        im.set_clim(vmin=0.0, vmax=1.0)
-        plt.colorbar()
-        fig.savefig("__im_%d.png" % cnt)
-        cnt += 1
+    S_b, E, ax = hn.energy_landscape()
+    # cnt = 0
+    # for mem in hn.memories:
+    #     fig = plt.figure()
+    #     im = plt.imshow(mem, cmap="jet")
+    #     im.set_clim(vmin=0.0, vmax=1.0)
+    #     plt.colorbar()
+    #     fig.savefig("__im_%d.png" % cnt)
+    #     cnt += 1
