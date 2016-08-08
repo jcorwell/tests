@@ -1,28 +1,34 @@
 # coding: utf-8
-import matplotlib.pyplot as plt
+
 import numpy as np
 from scipy.integrate import odeint
+from sklearn.decomposition import PCA
+
 from skimage import data, io
 from skimage.filters import threshold_otsu
 from skimage.util import random_noise
 from skimage.color import rgb2grey
 from skimage.transform import resize
+
 import gc
 import time
-from sklearn.decomposition import PCA
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from rscripts.Plot.Arrow3D import Arrow3D
 
+import scipy.io.wavfile as wav
+
 try:
     __IPYTHON__
     get_ipython().magic(u'pylab')
-    plt.ion()
+    # plt.ion()
 except NameError:
     pass
 
-Horse = rgb2grey(data.horse())
-
+# Horse = rgb2grey(data.horse())
+global AUDIO_
+AUDIO_ = False
 
 class HopfieldNetwork:
     def __init__(self, **kwargs):
@@ -30,33 +36,38 @@ class HopfieldNetwork:
                       "x": None,
                       "cue": None,
                       "weight_type": "pearson",
-                      "gamma": 0.30,
+                      "gamma": 0.20,
                       "tau": 1.00,
-                      "S_hebb": 0.20,
-                      "D_fact": 0.15,
+                      "S_hebb": 0.80,
+                      "D_fact": 0.90,
                       "s0": 1.0,
                       "time_to_recall": 1.00,
                       "format": "img_bin",
                       "verbose": 0,
                       "cue_update": "mon_incr",
-                      "shape": (10, 10),
-                      "anim": True,
-                      "atol": 1.49012e-8}
+                      "shape": (5, 5),
+                      "tol": 1.49012e-8,
+                      "full_output": 0,
+                      "hmin": 0.5}
         self.__onstart(kwargs)
-        self.WeightsContainer = self.HopfieldWeights(self)
-        self.WeightsContainer()
-        self.CueModifier = self.CueMod(self)
 
     def __call__(self, **kwargs):
-        self.train()
+        self.__update_options(kwargs)
+        self.__integrate()
+        return {"Weights": self.WeightsContainer, "Cues": self.CueModifier, "Options": self.__var}
 
     def __onstart(self, kwargs):
         self.__update_options(kwargs)
         self.__format_input()
         self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
-        self.memories = []
-        self.Is = []
-        self.Us = []
+        self.memories = list()
+        self.Is = list()
+        self.Us = list()
+        self.starting_time = 0.0
+        self.WeightsContainer = self.HopfieldWeights(self)
+        self.WeightsContainer()
+        self.CueModifier = self.CueMod(self)
+        self.__integrate()
 
     def __update_options(self, kwargs):
         self.__var.update(kwargs)
@@ -69,7 +80,7 @@ class HopfieldNetwork:
         for input_img in ["x", "cue"]:
             self.update_param(input_img, resize(self._get(input_img),
                                                 self._get("shape")))
-            if self._get("verbose") is True: print input_img, " size:", self._get(input_img).shape
+            if self._get("verbose") >= 1: print input_img, " size:", self._get(input_img).shape
         gc.collect()
 
     def load_im(self, fn, format=""):
@@ -77,14 +88,21 @@ class HopfieldNetwork:
         self.update_param("x", img)
         gc.collect()
 
-    def train(self, train_time=None, cue=None):
-        if train_time is not None: 
-            self.update_param("time_to_recall", train_time)
-            self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
-        if cue is not None:
-            cue_reshape = rgb2grey(resize(cue, self._get("shape")))
-            self.update_params({"cue": cue_reshape}) # "x": cue_reshape,
+    def reinforce(self, x0, x1, mixture=2.0):
+        x0 = rgb2grey(resize(x0, self._get("shape")))
+        x1 = rgb2grey(resize(x1, self._get("shape")))
+        self.starting_time = mixture
+        self.update_params({"x": x0, "cue": x1})
         self.Is.append(self._get("cue"))
+        self.WeightsContainer()
+        self.__integrate()
+        self.Us.append(self.memories[-1])
+
+    def learn(self, cue):
+        new_cue = rgb2grey(resize(cue, self._get("shape")))
+        self.update_params({"x": new_cue, "cue": new_cue})
+        self.Is.append(self._get("cue"))
+        self.WeightsContainer()
         self.__integrate()
         self.Us.append(self.memories[-1])
 
@@ -93,16 +111,22 @@ class HopfieldNetwork:
             self.update_param("time_to_recall", expose_time)
             self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         new_cue = rgb2grey(resize(cue, self._get("shape")))
-        self.update_params({"cue": new_cue, "x": new_cue})
+        self.update_params({"cue": new_cue, "x": self._get("cue")})
         self.Is.append(self._get("cue"))
         self.__integrate()
         self.Us.append(self.memories[-1])
 
     def __integrate(self):
-        # starting place
-        I0 = self.CueModifier(0.0)
+        I0 = self.CueModifier(0.0) # starting place
         timespace = self.timespace
-        memory_ = odeint(self.__iter, I0.flatten(), timespace, atol=self._get("atol"))
+        odeout = odeint(self.__iter, I0.flatten(), timespace, 
+                         atol=self._get("tol"), rtol=self._get("tol"),
+                         full_output=self._get("full_output"),
+                         hmin=self._get("hmin")
+                        )
+        if self._get("full_output") == 1: 
+            memory_, self.ode_out = odeout
+        else: memory_ = odeout
         self.memories.extend(list(map(lambda mem: mem.reshape(self._get("x").shape), memory_)))
         gc.collect()
 
@@ -119,7 +143,7 @@ class HopfieldNetwork:
         shp = self._get("shape")[0]
         X = np.array(self.Is)
         X = X.reshape((len(self.Is), shp, shp))
-        S_b = np.array(list(map(lambda I_i: np.transpose(I_i - X.mean(0), axes=[0, 2, 1]) * (I_i - X.mean(0)), X))).sum(0)
+        S_b = np.array(list(map(lambda I_i: np.cov(I_i).sum(0), X ) ) )
         S_b = np.nan_to_num(S_b)
         S_b = (S_b - S_b.mean(0)) / S_b.std(0)
         S_b = np.nan_to_num(S_b)
@@ -127,13 +151,13 @@ class HopfieldNetwork:
 
     def __energy(self):
         u = np.array(self.Us)
-        E = -0.5*((self.W*u*np.transpose(u, axes=[0, 2, 1])).sum(2)) + 0.5*np.sum(u, axis=1)
+        E = -0.5*((self.W*u*np.transpose(u, axes=[0, 2, 1])).sum(axis=(2))) + 0.5*np.sum(u, axis=1)
         E = np.nan_to_num(E)
         E = (E - E.mean(0)) / E.std(0)
         E = np.nan_to_num(E)
         return E
 
-    def energy_landscape(self, plot=False):
+    def energy_landscape(self, plot=False, outname="__energy_landscape.png"):
         S_b = self.__scatter()
         E = self.__energy()
         pca = PCA(n_components=2)
@@ -141,7 +165,8 @@ class HopfieldNetwork:
         outs = [S_bpr, E]
         if plot is True:
             ax = plt.subplot(projection='3d')
-            l = np.column_stack([S_bpr, E.mean(0)])
+            print S_bpr.shape, E.shape, E.mean(1).shape
+            l = np.column_stack([S_bpr, E.mean(1)])
             colors = l[:, 2]
             ax.scatter(l[:, 0], l[:, 1], l[:, 2], c=colors)
             for ix in range(l.shape[0]-1):
@@ -155,26 +180,10 @@ class HopfieldNetwork:
                               color='k')
                 ax.add_artist(arr)
             outs.append(ax)
+            fig = ax.get_figure()
+            outs.append(fig)
+            fig.savefig(outname)
         return outs
-
-    def HLP(self, curr_u):
-        S_hebb = self._get("S_hebb")
-        u = curr_u.copy()
-        HLP = S_hebb*((u.T*u))-S_hebb*((1.00 - u).T * u)
-        gc.collect()
-        return HLP
-
-    def MID(self, curr_u):
-        D_fact = self._get("D_fact")
-        I = self._get("cue").copy()
-        I_norm = self._get("cue").copy()
-        I_norm -= I.min()
-        I_norm /= (I.max() - I.min())
-        u = curr_u.copy()
-        m = I_norm - u
-        MID = D_fact*(m.T * u)
-        gc.collect()
-        return MID
 
     def update_cue(self, new_cue):
         self.__var.update({"cue": new_cue})
@@ -198,9 +207,26 @@ class HopfieldNetwork:
         def __call__(self):
             return self.__compute_weights()
 
+        def HLP(self, curr_u):
+            S_hebb = self.H._get("S_hebb")
+            u = curr_u.copy()
+            HLP = S_hebb*((u.T*u))-S_hebb*((1.00 - u).T * u)
+            return HLP
+
+        def MID(self, curr_u):
+            D_fact = self.H._get("D_fact")
+            I = self.I.copy()
+            I_norm = self.I.copy()
+            I_norm -= I.min()
+            I_norm /= (I.max() - I.min())
+            u = curr_u.copy()
+            m = I_norm - u
+            MID = D_fact*(m.T * u)
+            return MID
+
         def update_weights(self, curr_u):
             s0 = self.H._get("s0")
-            T_new = self.H.MID(curr_u) + self.H.HLP(curr_u)
+            T_new = self.MID(curr_u) + self.HLP(curr_u)
             self.W += -self.H._get("gamma")*self.W + T_new
             self.W = np.nan_to_num(self.W)
             self.W[self.W > s0] = s0
@@ -275,21 +301,95 @@ class HopfieldNetwork:
             I -= I_.min()
             I /= (I_.max() - I_.min())
             self.H.update_cue(I)
-            gc.collect()
             return I
 
 
+def image_cues():
+    rs = np.random.RandomState()
+    rs.seed(135221)
+    x0 = data.horse()
+    x1 = data.astronaut()
+    x2 = np.random.choice([0, 10], size=(50, 50), replace=True)
+    xs = [x0, x1, x2]
+    return xs
+
+def audio_cues(times=3):
+    global AUDIO_
+    AUDIO_ = True
+    import pyaudio, thread
+    def input_thread(l):
+        raw_input()
+        l.append(None)
+    CHUNKSIZE = 2048
+    global RATE
+    RATE = 44100
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paFloat32, channels=1, rate=RATE, input=True, frames_per_buffer=CHUNKSIZE)
+    cues = list()
+    streams = list()
+    ts = list()
+    tt = 0
+    while tt < times:
+        print "Stream: %d" % tt
+        l = list()
+        thread.start_new_thread(input_thread, (l,))
+        t0 = time.time()
+        while not l:
+            # do this as long as you want fresh samples:
+            data = stream.read(CHUNKSIZE)
+            numpydata = np.fromstring(data, dtype=np.float32)
+            streams.append(numpydata)
+            numpydata = numpydata.reshape((1,CHUNKSIZE))
+        ts.append(time.time()-t0)
+        cues.append(numpydata)
+        np.save("__stream_%d" % tt, numpydata)
+        tt += 1
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    wav.write("streams.wav", RATE, np.hstack(streams))
+    return cues, ts
+
 if __name__ == '__main__':
-    hn = HopfieldNetwork(x=data.horse(), cue=data.astronaut())
-    hn.train(train_time=1.0, cue=data.astronaut())
-    hn.expose(expose_time=5.0, cue=data.horse())
-    hn.expose(expose_time=5.0, cue=data.astronaut())
-    S_b, E, ax = hn.energy_landscape()
-    # cnt = 0
-    # for mem in hn.memories:
-    #     fig = plt.figure()
-    #     im = plt.imshow(mem, cmap="jet")
-    #     im.set_clim(vmin=0.0, vmax=1.0)
-    #     plt.colorbar()
-    #     fig.savefig("__im_%d.png" % cnt)
-    #     cnt += 1
+    xs, ts = audio_cues(times=3)
+    mlx = np.mean([len(xx) for xx in xs])
+    # shape = (round(mlx)**3, round(mlx)**3)
+    shape = (100, 100)
+    padsize = int((shape[0]-1.0)/2.0)
+    xs = map(lambda npdat: np.pad(npdat, pad_width=((padsize, padsize), (0,0)), mode='constant', constant_values=0), xs)
+    print "TIME:", np.mean(ts)
+    xs = xs[0:-1]
+    imcues = image_cues()
+    xs.append(imcues[0])
+    x0, x1, x2 = xs
+    cnt1 = 0
+    for xx in xs:
+        fig1 = plt.figure()
+        im = plt.imshow(xx, cmap="jet")
+        im.set_clim(vmin=0, vmax=1)
+        plt.colorbar()
+        fig1.savefig("X%d.png" % cnt1)
+        cnt1 += 1
+    hn = HopfieldNetwork(x=x0, cue=x2, shape=shape, hmin=1e-86, full_output=1)
+    hn.learn(cue=x0)
+    hn.learn(cue=x1)
+    hn.learn(cue=x2)
+    hn.reinforce(x0, x2, mixture=1.0)
+    hn.expose(cue=x1, expose_time=10.0)
+    hn.expose(cue=x2, expose_time=10.0)
+    S_b, E, el_ax, el_fig = hn.energy_landscape(plot=True)
+    cnt = 0
+    amems = list()
+    for mem in hn.memories:
+        if AUDIO_ is True:
+            amems.append(mem[int(mem.shape[0]/2.)])
+        fig = plt.figure()
+        im = plt.imshow(mem, cmap="jet")
+        im.set_clim(vmin=0.0, vmax=1.0)
+        plt.colorbar()
+        fig.savefig("__state_%d.png" % cnt)
+        cnt += 1
+
+    if AUDIO_ is True:
+        amem = np.hstack(amems).astype(np.float32)
+        wav.write("audio_learning.wav", RATE, amem)
