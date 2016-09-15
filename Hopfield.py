@@ -37,10 +37,10 @@ class HopfieldNetwork:
                       "x": None,
                       "cue": None,
                       "weight_type": "pearson",
-                      "gamma": 0.20,
+                      "gamma": 0.15,
                       "tau": 1.00,
                       "S_hebb": 0.80,
-                      "D_fact": 0.90,
+                      "D_fact": 1.25,
                       "s0": 1.0,
                       "time_to_recall": 1.00,
                       "format": "img_bin",
@@ -59,7 +59,10 @@ class HopfieldNetwork:
 
     def __onstart(self, kwargs):
         self.__update_options(kwargs)
-        self.__format_input()
+        try:
+            self.__format_input()
+        except AttributeError:
+            pass
         self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         self.total_time = 0.0
         self.memories = list()
@@ -67,9 +70,7 @@ class HopfieldNetwork:
         self.Us = list()
         self.starting_time = 0.0
         self.WeightsContainer = self.HopfieldWeights(self)
-        self.WeightsContainer()
         self.CueModifier = self.CueMod(self)
-        self.__integrate()
 
     def __update_options(self, kwargs):
         self.__var.update(kwargs)
@@ -90,7 +91,13 @@ class HopfieldNetwork:
         self.update_param("x", img)
         gc.collect()
 
-    def reinforce(self, x0, x1, mixture=2.0):
+    def train(self, cue):
+        new_cue = rgb2grey(resize(cue, self._get("shape")))
+        self.update_param('x', new_cue)
+        self.WeightsContainer() # compute weights
+        # print self.W
+
+    def reinforce(self, x0, x1, mixture=2.0, expose_time=None):
         """
             Reinforce:
             1) Update both x and cue
@@ -103,28 +110,16 @@ class HopfieldNetwork:
         self.starting_time = mixture
         self.update_params({"x": x0, "cue": x1})
         self.Is.append(self._get("cue"))
-        # self.WeightsContainer()
-        self.__integrate()
-        self.Us.append(self.memories[-1])
-
-    def learn(self, cue):
-        """
-            Learn:
-            1) Replace both x and cue
-            2) Add new cue to list of Is
-            3) Integrate for one step, updating weights too
-        """
-        new_cue = rgb2grey(resize(cue, self._get("shape")))
-        self.update_params({"x": new_cue, "cue": new_cue})
-        self.Is.append(self._get("cue"))
-        # self.WeightsContainer()
+        if expose_time is not None:
+            self.update_param("time_to_recall", expose_time)
+            self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         self.__integrate()
         self.Us.append(self.memories[-1])
 
     def expose(self, cue, expose_time=None):
         """
             Expose:
-            1) Replace cue and x
+            1) Replace cue
             2) Add new cue to list of Is
             3) Integrate for expose time & update weights
         """
@@ -132,7 +127,7 @@ class HopfieldNetwork:
             self.update_param("time_to_recall", expose_time)
             self.timespace = np.arange(0, self._get("time_to_recall"), step=self._get("tau"))
         new_cue = rgb2grey(resize(cue, self._get("shape")))
-        self.update_params({"cue": new_cue, "x": self._get("cue")})
+        self.update_cue(new_cue)
         self.Is.append(self._get("cue"))
         self.__integrate()
         self.Us.append(self.memories[-1])
@@ -145,67 +140,62 @@ class HopfieldNetwork:
                          full_output=self._get("full_output"),
                          hmin=self._get("hmin")
                         )
-        if self._get("full_output") == 1: 
-            memory_, self.ode_out = odeout
-        else: memory_ = odeout
+        memory_ = odeout
         self.memories.extend(list(map(lambda mem: mem.reshape(self._get("x").shape), memory_)))
         gc.collect()
 
     def __iter(self, u, t):
         u = u.reshape(self._get("x").shape)
-        self.W = self.WeightsContainer.update_weights(u)
         I = self.CueModifier(t + self.total_time)
-        du_ = -u + 0.50*(1.00 + np.tanh(np.sum(np.dot(self.W, u) + I, axis=1)))
+        du_ = (-u + 0.50*(1.00 + np.tanh(np.sum(self.W*u.T*self.W.T, axis=1) + I.T)))
+        self.W = self.WeightsContainer.update_weights(u)
         if self._get("verbose") >= 2:
-            print(self.W.min(), self.W.max(), self.W.mean())
+            print("W: ", self.W.min(), self.W.max(), self.W.mean())
+            print("du: ", self.W.min(), self.W.max(), self.W.mean())
         self.total_time += 1 # add to total run time
         return du_.flatten()
 
     def __scatter(self):
-        shp = self._get("shape")[0]
-        X = np.array(self.Is)
-        X = X.reshape((len(self.Is), shp, shp))
-        S_b = np.array(list(map(lambda I_i: np.cov(I_i).sum(0), X ) ) )
-        S_b = np.nan_to_num(S_b)
-        S_b = (S_b - S_b.mean(0)) / S_b.std(0)
-        S_b = np.nan_to_num(S_b)
-        return S_b
+        Sbs = list()
+        for I in self.Is:
+            pca = PCA(n_components=2)
+            S_b = pca.fit_transform(I)
+            Sbs.append(S_b)
+        Sbs = np.array(Sbs)
+        Sbs = Sbs.mean(1)
+        Sbs -= Sbs.min()
+        Sbs /= (Sbs.max() - Sbs.min())
+        return Sbs
 
     def __energy(self):
-        u = np.array(self.Us)
-        E = -0.5*((self.W*u*np.transpose(u, axes=[0, 2, 1])).sum(axis=(2))) + 0.5*np.sum(u, axis=1)
-        E = np.nan_to_num(E)
-        E = (E - E.mean(0)) / E.std(0)
-        E = np.nan_to_num(E)
-        return E
+        Es = list()
+        for u in self.Us:
+            E = -0.5*(self.W*u*u.T).sum() + 0.5*(u.sum())
+            Es.append(E)
+        Es = np.array(Es)
+        Es -= Es.min()
+        Es /= (Es.max() - Es.min())
+        return Es
 
     def energy_landscape(self, plot=False, outname="__energy_landscape.png"):
         S_b = self.__scatter()
         E = self.__energy()
-        pca = PCA(n_components=2)
-        S_bpr = pca.fit_transform(S_b)
-        outs = [S_bpr, E]
         if plot is True:
+            fig = plt.figure()
             ax = plt.subplot(projection='3d')
-            print S_bpr.shape, E.shape, E.mean(1).shape
-            l = np.column_stack([S_bpr, E.mean(1)])
-            colors = l[:, 2]
-            ax.scatter(l[:, 0], l[:, 1], l[:, 2], c=colors)
-            for ix in range(l.shape[0]-1):
-                lx, ly, lz = l[ix, :]
-                lx1, ly1, lz1 = l[ix+1, :]
-                arr = Arrow3D([lx, lx1],
-                              [ly, ly1],
-                              [lz, lz1],
-                              arrowstyle='-|>',
-                              mutation_scale=20,
-                              color='k')
-                ax.add_artist(arr)
-            outs.append(ax)
-            fig = ax.get_figure()
-            outs.append(fig)
+            ax.plot(S_b[:, 0], S_b[:, 1], zs=E, marker='o')
+            for ii in range(0, len(S_b)-1):
+                startx, starty = S_b[ii, :]
+                endx, endy = S_b[ii+1, :]
+                startz, endz = E[ii], E[ii+1]
+                arrow=Arrow3D([startx, endx],
+                        [starty, endy],
+                        [startz, endz],
+                        arrowstyle='-|>',
+                        mutation_scale=20,
+                        color='k')
+                ax.add_artist(arrow)
             fig.savefig(outname)
-        return outs
 
     def update_cue(self, new_cue):
         self.__var.update({"cue": new_cue})
@@ -232,7 +222,7 @@ class HopfieldNetwork:
         def HLP(self, curr_u):
             S_hebb = self.H._get("S_hebb")
             u = curr_u.copy()
-            HLP = S_hebb*((u.T*u))-S_hebb*((1.00 - u).T * u)
+            HLP = S_hebb*(u.T*u) - S_hebb*((1.00 - u).T * u)
             return HLP
 
         def MID(self, curr_u):
@@ -249,8 +239,7 @@ class HopfieldNetwork:
         def update_weights(self, curr_u):
             s0 = self.H._get("s0")
             T_new = self.MID(curr_u) + self.HLP(curr_u)
-            self.W += -self.H._get("gamma")*self.W + T_new
-            self.W = np.nan_to_num(self.W)
+            self.W = self.W + (-self.H._get("gamma")*self.W + T_new)
             self.W[self.W > s0] = s0
             self.W[self.W < -s0] = -s0
             return self.W
@@ -259,7 +248,6 @@ class HopfieldNetwork:
             s0 = self.H._get("s0")
             w = getattr(self, self.wtype)()
             w[np.diag_indices_from(w)] = 0
-            w = np.nan_to_num(w)
             w[w > s0] = s0
             w[w < -s0] = -s0
             setattr(self.H, 'W', w)
@@ -268,6 +256,9 @@ class HopfieldNetwork:
 
         def pearson(self):
             return np.corrcoef(self.x)
+
+        def hebbian(self):
+            return np.dot(self.x, self.x.T) / (np.sum(self.x.shape))
         
         @property
         def wtype(self):
@@ -417,52 +408,3 @@ def do_audio_img_pair():
     if AUDIO_ is True:
         amem = np.hstack(amems).astype(np.float32)
         wav.write("audio_learning.wav", RATE, amem)
-
-if __name__ == '__main__':
-    rs = np.random.RandomState()
-    rs.seed(135221)
-    shape = (50, 50)
-    init0 = np.random.choice([0, 10], size=shape, replace=True)
-    init1 = np.random.choice([0, 10], size=shape, replace=True)
-    xs = image_cues(shape)
-    x0, x1, x2 = xs
-    cnt1 = 0
-
-    fig = plt.figure()
-    im0 = plt.imshow(init0, cmap="jet")
-    im0.set_clim(vmin=0, vmax=1)
-    plt.colorbar()
-    fig.savefig("init0.png")
-
-    fig01 = plt.figure()
-    im1 = plt.imshow(init1, cmap="jet")
-    im1.set_clim(vmin=0, vmax=1)
-    plt.colorbar()
-    fig01.savefig("init1.png")
-
-    for xx in xs:
-        fig1 = plt.figure()
-        im = plt.imshow(rgb2grey(xx), cmap="jet")
-        im.set_clim(vmin=0, vmax=1)
-        plt.colorbar()
-        fig1.savefig("X%d.png" % cnt1)
-        cnt1 += 1
-
-    hn = HopfieldNetwork(x=init0, cue=init1, shape=shape, hmin=1e-86, full_output=1)
-    hn.learn(cue=x0)
-    hn.learn(cue=x1)
-    hn.learn(cue=x2)
-    hn.reinforce(x0, x2, mixture=1.0)
-    hn.expose(cue=x1, expose_time=10.0)
-    hn.expose(cue=x2, expose_time=10.0)
-    S_b, E, el_ax, el_fig = hn.energy_landscape(plot=True)
-    
-    cnt = 0
-    amems = list()
-    for mem in hn.memories:
-        fig = plt.figure()
-        im = plt.imshow(mem, cmap="jet")
-        im.set_clim(vmin=0.0, vmax=1.0)
-        plt.colorbar()
-        fig.savefig("__state_%d.png" % cnt)
-        cnt += 1
