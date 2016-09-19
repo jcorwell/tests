@@ -8,9 +8,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+import os
+
 plt.close('all')
 
 class STDPNetwork(object):
+    """
+        See stdp() function near the bottom for an example
+        This class creates a Spike-Timing Dependent Plasticity Network
+
+        -Time offsets are given in the connections kwarg
+        
+        -A_p, A_n are lag coefficients, which determine the amount of inhibition received
+        for positively/negatively weighted units respectively
+    """
     def __init__(self, **kwargs):
         self.opt = {
             "kind": "traditional",
@@ -70,7 +81,7 @@ class STDPNetwork(object):
     def select_action(self, nodes, pshow):
         l = nodes[1][0][-1]
         r = nodes[1][1][-1]
-        print abs(l - r).sum()
+        # print abs(l - r).sum()
         if np.abs(l - pshow).sum() < np.abs(r - pshow).sum():
             print "Left"
         else:
@@ -172,6 +183,9 @@ class Weights(np.ndarray):
         
 
 def HNTest():
+    '''
+        HOPFIELD NETWORK TEST
+    '''
     plt.close("all")
     fig = plt.figure()
     gs = gridspec.GridSpec(2, 2, wspace=0.2)
@@ -213,20 +227,19 @@ def HNTest():
     plt.close('all')
 
 def stdp():
-    """
-        Spike-timing Dependent Plasticity
-        Experiment
-    """
+    ''' 
+        Spike-timing Dependent Plasticity TEST
+    '''
     plt.close('all')
-    fig = plt.figure()
-    gs = gridspec.GridSpec(5, 2, wspace=0.2)
+    fig = plt.figure(figsize=(10,10))
+    gs = gridspec.GridSpec(5, 2, wspace=0.2, hspace=1.)
 
     shp = 50 # Shape of the input cues
     
     p = resize(rgb2grey(data.horse()), (shp, shp)) # Cue A
     p2 = resize(rgb2grey(data.astronaut()), (shp, shp)) # Cue B
-    p3 = np.zeros_like(p) # Hidden Cue L
-    p4 = np.ones_like(p) # Hidden Cue R
+    p3 = np.ones_like(p) # Hidden Cue L
+    p4 = np.zeros_like(p) # Hidden Cue R
 
     # Connections dictionary ((INPUT LAYER, ID), (OUTPUT LAYER, ID)): TIME OFFSET
     connections= {
@@ -241,71 +254,69 @@ def stdp():
                    ((1, 1),(0, 1)): 0}
 
     # Instantiate STDPNetwork
-    sn = STDPNetwork(nr_units=shp, A_n=1.05, A_p=1.05, initialize=np.zeros, connections=connections)
+    sn = STDPNetwork(nr_units=shp, A_n=0.5, A_p=0.5, initialize=np.zeros, connections=connections)
 
     # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])
 
     pshow=p # Cue for recall step
-    steps = 50 # Number of time steps
+    steps = 10 # Number of time steps
     nodes = sn.recall(pshow, nr_iters=steps, time=20)
     sn.select_action(nodes, pshow)
 
     # Plot first cue
     ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title("Cue A")
     ax1.axis('off')
     ax1.imshow(p, cmap='jet')
 
     # Plot second cue
     ax2 = fig.add_subplot(gs[0, 1])
+    ax2.set_title("Cue B")
     ax2.axis('off')
     ax2.imshow(p2, cmap='jet')
 
     # Left State
     ax3 = fig.add_subplot(gs[1, 0])
+    ax3.set_title("Hidden L Cue")
     ax3.axis('off')
-    ax3.imshow(p3, cmap='jet')
+    ax3.matshow(p3)
 
     # Right State
     ax4 = fig.add_subplot(gs[1, 1])
+    ax4.set_title("Hidden R Cue")
     ax4.axis('off')
-    ax4.imshow(p4, cmap='jet')
+    ax4.matshow(p4, cmap='jet')
 
     # Plot first layer
     ax5 = fig.add_subplot(gs[2, 0])
+    ax5.set_title("Sensory Layer: A")
     ax5.axis('off')
     ax5.imshow(nodes[0][0][-1], cmap='jet')
 
     ax6 = fig.add_subplot(gs[2, 1])
+    ax6.set_title("Sensory Layer: B")
     ax6.axis('off')
     ax6.imshow(nodes[0][1][-1], cmap='jet')
 
     # Plot second layer
     ax7 = fig.add_subplot(gs[3, 0])
+    ax7.set_title("Hidden Layer: L")
     ax7.axis('off')
     ax7.imshow(nodes[1][0][-1], cmap='jet')
 
     ax8 = fig.add_subplot(gs[3, 1])
+    ax8.set_title("Hidden Layer: R")
     ax8.axis('off')
     ax8.imshow(nodes[1][1][-1],cmap='jet')
-
-    # Plot mean of output layer
-    # ax9 = fig.add_subplot(gs[4, :])
-    # ax9.axis('off')
-    # mn = (nodes[1][0][-1]+nodes[1][1][-2])/2.0
-    # mn = (mn - mn.min()) / (mn.max() - mn.min())
-    # mn[mn > 0.5] = 1.
-    # mn[mn < 0.5] = 0.
-    # ax9.imshow(mn, cmap='jet')
-
 
     plt.show()
 
     
-
-
 if __name__ == '__main__':
     ''' This is where you'll run experiments.
     '''
     stdp()
     #HNTest()
+
+os._exit(0)
