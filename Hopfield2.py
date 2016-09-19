@@ -71,7 +71,7 @@ class STDPNetwork(object):
         A_n = self._get("A_n")
         A_p = self._get("A_p")
         for connk, offset in self._get("connections").items():
-            # print connk
+            print connk
             s0, s1 = connk
             preHn = self.Layers[s0[0]][s0[1]]
             postHn = self.Layers[s1[0]][s1[1]]
@@ -177,8 +177,11 @@ class Weights(np.ndarray):
         return self
 
     def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
-        self[self > 0.5] += A_p*offset
-        self[self < 0.5] += -A_n*offset
+        deltap = A_p*offset
+        deltan = -A_n*offset
+        print deltap, deltan
+        self[self > 0.5] += deltap
+        self[self < 0.5] += deltan
         return self
         
 
@@ -238,15 +241,18 @@ def stdp():
     
     p = resize(rgb2grey(data.horse()), (shp, shp)) # Cue A
     p2 = resize(rgb2grey(data.astronaut()), (shp, shp)) # Cue B
+    # np.random.seed(112)
+    # p = np.random.random((shp,shp))
+    # p2 = np.random.random((shp,shp))
     p3 = np.ones_like(p) # Hidden Cue L
     p4 = np.zeros_like(p) # Hidden Cue R
 
     # Connections dictionary ((INPUT LAYER, ID), (OUTPUT LAYER, ID)): TIME OFFSET
-    connections= {
+    connections = {
                    ((0, 0),(1, 0)): 0,
                    ((0, 1),(1, 1)): 0,
-                   ((0, 0),(1, 1)): 50,
-                   ((0, 1),(1, 0)): 50,
+                   ((0, 0),(1, 1)): 10,
+                   ((0, 1),(1, 0)): 10,
 
                    ((1, 0),(0, 0)): 0,
                    ((1, 0),(0, 1)): 0,
@@ -254,39 +260,41 @@ def stdp():
                    ((1, 1),(0, 1)): 0}
 
     # Instantiate STDPNetwork
-    sn = STDPNetwork(nr_units=shp, A_n=0.5, A_p=0.5, initialize=np.zeros, connections=connections)
+    sn = STDPNetwork(nr_units=shp, A_n=1.05, A_p=1.05, initialize=np.zeros, connections=connections)
 
     # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])
 
-    pshow=p # Cue for recall step
-    steps = 10 # Number of time steps
-    nodes = sn.recall(pshow, nr_iters=steps, time=20)
-    sn.select_action(nodes, pshow)
+    PSHOW = p # Cue for recall step
+    if (PSHOW == p2).all(): fig.suptitle("Astronaut")
+    elif (PSHOW == p).all(): fig.suptitle("Horse")
+    steps = 50 # Number of time steps
+    nodes = sn.recall(PSHOW, nr_iters=steps, time=20)
+    sn.select_action(nodes, PSHOW)
 
     # Plot first cue
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_title("Cue A")
     ax1.axis('off')
-    ax1.imshow(p, cmap='jet')
+    ax1.imshow(p, cmap='jet', interpolation='none')
 
     # Plot second cue
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.set_title("Cue B")
     ax2.axis('off')
-    ax2.imshow(p2, cmap='jet')
+    ax2.imshow(p2, cmap='jet', interpolation='none')
 
     # Left State
     ax3 = fig.add_subplot(gs[1, 0])
     ax3.set_title("Hidden L Cue")
     ax3.axis('off')
-    ax3.matshow(p3)
+    ax3.imshow(p3, interpolation='none', vmin=0, vmax=1)
 
     # Right State
     ax4 = fig.add_subplot(gs[1, 1])
     ax4.set_title("Hidden R Cue")
     ax4.axis('off')
-    ax4.matshow(p4, cmap='jet')
+    ax4.imshow(p4, cmap='jet', interpolation='none')
 
     # Plot first layer
     ax5 = fig.add_subplot(gs[2, 0])
@@ -297,18 +305,18 @@ def stdp():
     ax6 = fig.add_subplot(gs[2, 1])
     ax6.set_title("Sensory Layer: B")
     ax6.axis('off')
-    ax6.imshow(nodes[0][1][-1], cmap='jet')
+    ax6.imshow(nodes[0][1][-1], cmap='jet', interpolation='none')
 
     # Plot second layer
     ax7 = fig.add_subplot(gs[3, 0])
     ax7.set_title("Hidden Layer: L")
     ax7.axis('off')
-    ax7.imshow(nodes[1][0][-1], cmap='jet')
+    ax7.imshow(nodes[1][0][-1], cmap='jet', interpolation='none')
 
     ax8 = fig.add_subplot(gs[3, 1])
     ax8.set_title("Hidden Layer: R")
     ax8.axis('off')
-    ax8.imshow(nodes[1][1][-1],cmap='jet')
+    ax8.imshow(nodes[1][1][-1],cmap='jet', interpolation='none')
 
     plt.show()
 
