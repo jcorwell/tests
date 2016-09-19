@@ -43,7 +43,7 @@ class STDPNetwork(object):
         self.Layers = dict()
         if connections is None: connections = self.opt['connections']
         if setup_dict is None: setup_dict = self.opt["setup_dict"]
-        for k, v in setup_dict:
+        for k, v in setup_dict.items():
             subpools = map(lambda vi: HopfieldNetwork(initialize=self._get("initialize"),
                                                       nr_units=self._get("nr_units"),
                                                       kind=self.opt['kind'], 
@@ -59,35 +59,13 @@ class STDPNetwork(object):
     def recall(self, p, time=10, nr_iters=10):
         A_n = self._get("A_n")
         A_p = self._get("A_p")
-        iters = 0
-        while iters < nr_iters:
-            for connk, offset in self._get("connections"):
-                s0, s1 = connk
-                preHn = self.Layers[s0[0]][s0[1]]
-                postHn = self.Layers[s1[0]][s1[1]]
-                postHn.stdp_session(p, A_n, A_p, preHn, time=time, steps=2, offset=offset)
-            iters += 1
+        for connk, offset in self._get("connections").items():
+            print connk
+            s0, s1 = connk
+            preHn = self.Layers[s0[0]][s0[1]]
+            postHn = self.Layers[s1[0]][s1[1]]
+            postHn.stdp_session(p, A_n, A_p, preHn, time=time, steps=nr_iters, offset=offset)
         return [[hn.Nodes.States for hn in subpool] for subpool in self.Layers.values()]
-
-
-    def full_session(self, p, total_steps=10, gamma=0.15, S=0.8, D=1.25):
-        t0 = 0
-        A_n = self._get("A_n")
-        A_p = self._get("A_p")
-        HN0 = self.Layers[0]
-        HN0.train(p, kind=self._get("kind"))
-        HN0.recall(p, steps=2, t0=0, gamma=gamma, S=S, D=D)
-        ii = 0
-        while ii <= total_steps-2:
-            print ii
-            if t0 == 0: stix = 1
-            else: stix = 0
-            for HN in self.Layers[stix:]:
-                HN.stdp_session(p, A_n, A_p, self.Layers[HN.order - 1], kind=self._get("kind"), 
-                                    steps=2, t0=t0, gamma=gamma, S=S, D=D, nr_step=ii)
-                t0 += 2
-            ii += 2
-        return [hn.Nodes.States for hn in self.Layers]
 
 
 class HopfieldNetwork(object):
@@ -99,7 +77,7 @@ class HopfieldNetwork(object):
     """
     def __init__(self, **kwargs):
         self.opt = {
-                    "kind": "pearson",
+                    "kind": "traditional",
                     "nr_units": 10,
                     "id_": (0, 0),
                     "initialize": np.zeros
@@ -108,7 +86,7 @@ class HopfieldNetwork(object):
         self.id_ = self.opt['id_']
         shape = tuple([self.opt["nr_units"]]*2)
         self.Weights = Weights(self.opt["initialize"](shape))
-        self.Nodes = Nodes(np.random.random(shape))
+        self.Nodes = Nodes(self.opt['initialize'](shape))
 
     def setup_opts(self, kwargs):
         for k, v in kwargs.items():
@@ -121,12 +99,12 @@ class HopfieldNetwork(object):
 
     def recall(self, p, steps=10, gamma=0.15, S=0.8, D=1.25, t0=0):
         self.Weights.update_weights(self.Nodes, p, gamma=gamma, S=S, D=D)
-        return self.Nodes.Integrate(p, np.linspace(t0, steps, steps))
+        return self.Nodes.Integrate(p, np.linspace(t0, steps, steps), self.Weights)
 
     def stdp_session(self, p, A_n, A_p, HN_pre, time=5, steps=5, kind="traditional", offset=0):
-        Nodes_pre = HN_pre.Nodes
-        self.Nodes.Integrate(p, np.linspace(offset, time, steps))
-        self.Weights.stdp_update(A_n, A_p, self.Nodes.States, Nodes_pre)
+        Weights_pre = HN_pre.Weights
+        self.Weights.stdp_update(A_n, A_p, self.Weights, Weights_pre, offset)
+        self.Nodes.Integrate(p, np.linspace(offset, time, steps), self.Weights)
 
 
 class Nodes(np.ndarray):
@@ -135,18 +113,19 @@ class Nodes(np.ndarray):
         obj.States = list()
         return obj
 
-    def Integrate(self, p, tspace):
+    def Integrate(self, p, tspace, weights):
         from scipy.integrate import odeint
-        weights = self.Weights
-        def du(t, u, p):
+        def du(u, t, p):
+            u = u.reshape(self.shape)
             p1 = np.dot(weights, u)
             sum1 = p1 + p
             du_ = -u + 0.5*(1.00 + np.tanh(sum1))
-            du_ = np.nan_to_num(du_)
             return du_.flatten()
-        integ = odeint(du, self.flatten(), tspace, args=(p,))
-        self.States.append([si.reshape(self.shape) for si in integ][-1])
-        self = integ[-1].reshape(self.shape)
+        u = np.array(self.flatten())
+        integ = odeint(du, u, tspace, args=(p,))
+        integ = integ[-1].reshape(self.shape)
+        self.States.append(integ)
+        self = integ
         return self
 
 
@@ -162,7 +141,7 @@ class Weights(np.ndarray):
         elif kind == "traditional":
             for i in range(len(p)):
                 for j in range(len(p)):
-                    self[i, j] += p[i, j]*p[j, i]
+                    self[i, j] += p[i, j]*p[i, j]
         return self
 
     def update_weights(self, u, p, gamma=0.15, S=0.8, D=1.25):
@@ -178,15 +157,9 @@ class Weights(np.ndarray):
         self += delta_w
         return self
 
-    def stdp_update(self, A_n, A_p, States0, States_pre):
-        # print len(States_pre), len(States0)
-        dtps = (States_pre[-1] - States0[-1])
-        dtns = (States0[-1] - States_pre[-1])
-        delta_p = A_p*self*dtps
-        delta_n = A_n*self*dtns
-        dw_dt = np.nan_to_num(delta_p - delta_n)
-        # print dw_dt.mean()
-        self += dw_dt
+    def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
+        self[self > 0.5] += A_p*offset
+        self[self < 0.5] += -A_n*offset
         return self
         
 
@@ -232,55 +205,92 @@ def HNTest():
     plt.close('all')
 
 def stdp():
-    import matplotlib.animation as animation
+    # import matplotlib.animation as animation
     plt.close('all')
     fig = plt.figure()
-    gs = gridspec.GridSpec(4, 2, wspace=0.2)
+    gs = gridspec.GridSpec(5, 2, wspace=0.2)
 
     shp = 50
     
     p = resize(rgb2grey(data.horse()), (shp, shp))
     p2 = resize(rgb2grey(data.astronaut()), (shp, shp))
+    p3 = np.zeros_like(p)
+    p4 = np.ones_like(p)
 
-    steps = 100
-    # offsets = [[ii for ii in range(0, steps*3, 3)]]*2
-    # offsets = offsets + [[ii for ii in range(steps, 0, -1)]]*2
-    offx = np.linspace(0, steps, steps)
-    offsets = list()
-    offsets = [[0], [10]*steps, [0]*steps, [0]*steps]
-    # offsets.append(np.exp(0.25*offx)+np.power(0.25*offx, 2)-np.power(0.25*offx, 3))
-    # offsets.append((1.0 + np.tanh(offx))*steps/2.0)
-    # offsets.append(offx*0.5)
-    # offsets.append(-np.power((offx-3.), 3.)+np.power(offx, 2.))
-    sn = STDPNetwork(nr_layers=4, nr_units=shp, A_n=1., A_p=1., offsets=offsets, initialize=np.zeros)
+    steps = 50
+    pshow=p
 
-    nodes = sn.full_session(p, total_steps=steps, gamma=0.15, D=1.25, S=0.8)
-    # sn.full_session(p2, total_steps=steps, gamma=0.05, D=1., S=0.75)
-    # nodes = sn.full_session(p, total_steps=steps, gamma=0.15, D=1.25, S=0.8)
+    connections= {
+                   ((0, 0),(1, 0)): 0,
+                   ((0, 1),(1, 1)): 0,
+                   ((0, 0),(1, 1)): 50,
+                   ((0, 1),(1, 0)): 50,
 
+                   ((1, 0),(0, 0)): 0,
+                   ((1, 0),(0, 1)): 0,
+                   ((1, 1),(0, 0)): 0,
+                   ((1, 1),(0, 1)): 0}
+
+    sn = STDPNetwork(nr_units=shp, A_n=1.05, A_p=1.05, initialize=np.zeros, connections=connections)
+    sn.train([[p, p2], [p3, p4]])
+    nodes = sn.recall(pshow, nr_iters=steps, time=20)
+
+    # Plot first cue
     ax1 = fig.add_subplot(gs[0, 0])
-    ax1.imshow(p, interpolation='none', cmap='jet')
+    ax1.axis('off')
+    ax1.imshow(p, cmap='jet')
 
-    im1 = ax2 = fig.add_subplot(gs[0, 1])
-    ax2.imshow(nodes[0][-1], interpolation='none', cmap='jet')
+    # Plot second cue
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.axis('off')
+    ax2.imshow(p2, cmap='jet')
 
-    # # Plot second cue
-    # ax3 = fig.add_subplot(gs[1, 0])
-    # ax3.imshow(p2, interpolation='none', cmap='jet')
+    # Left State
+    ax3 = fig.add_subplot(gs[1, 0])
+    ax3.axis('off')
+    ax3.imshow(p3, cmap='jet')
 
-    # Plot second recall
+    # Right State
     ax4 = fig.add_subplot(gs[1, 1])
-    im2 = ax4.imshow(nodes[1][-1], interpolation='none', cmap='jet')
+    ax4.axis('off')
+    ax4.imshow(p4, cmap='jet')
 
-    ax5 = fig.add_subplot(gs[2, 1])
-    im3 = ax5.imshow(nodes[2][-1], interpolation='none', cmap='jet')
+    # Plot first layer
+    ax5 = fig.add_subplot(gs[2, 0])
+    ax5.axis('off')
+    ax5.imshow(nodes[0][0][-1], cmap='jet')
 
-    ax6 = fig.add_subplot(gs[3, 1])
-    im4 = ax6.imshow(nodes[3][-1], interpolation='none', cmap='jet')
+    ax6 = fig.add_subplot(gs[2, 1])
+    ax6.axis('off')
+    ax6.imshow(nodes[0][1][-1], cmap='jet')
 
-    # ims = map(lambda i: [plt.imshow(nodes[-1][i], interpolation='none', cmap='jet')], range(len(nodes[0])))
-    # ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True, repeat_delay=1000)
-    # ani.save("STDPNetwork.mp4")
+    # Plot second layer
+    ax7 = fig.add_subplot(gs[3, 0])
+    ax7.axis('off')
+    ax7.imshow(nodes[1][0][-1], cmap='jet')
+
+    l = nodes[1][0][-1]
+    r = nodes[1][1][-1]
+    print abs(l - r).sum()
+    if np.abs(l - pshow).sum() < np.abs(r - pshow).sum():
+        print "Left"
+    else:
+        print "Right"
+
+    ax8 = fig.add_subplot(gs[3, 1])
+    ax8.axis('off')
+    ax8.imshow(nodes[1][1][-1],cmap='jet')
+
+    # Plot mean of output layer
+    # ax9 = fig.add_subplot(gs[4, :])
+    # ax9.axis('off')
+    # mn = (nodes[1][0][-1]+nodes[1][1][-2])/2.0
+    # mn = (mn - mn.min()) / (mn.max() - mn.min())
+    # mn[mn > 0.5] = 1.
+    # mn[mn < 0.5] = 0.
+    # ax9.imshow(mn, cmap='jet')
+
+
     plt.show()
 
     
@@ -290,3 +300,4 @@ if __name__ == '__main__':
     ''' This is where you'll run experiments.
     '''
     stdp()
+    #HNTest()
