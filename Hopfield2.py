@@ -60,13 +60,21 @@ class STDPNetwork(object):
         A_n = self._get("A_n")
         A_p = self._get("A_p")
         for connk, offset in self._get("connections").items():
-            print connk
+            # print connk
             s0, s1 = connk
             preHn = self.Layers[s0[0]][s0[1]]
             postHn = self.Layers[s1[0]][s1[1]]
             postHn.stdp_session(p, A_n, A_p, preHn, time=time, steps=nr_iters, offset=offset)
         return [[hn.Nodes.States for hn in subpool] for subpool in self.Layers.values()]
 
+    def select_action(self, nodes, pshow):
+        l = nodes[1][0][-1]
+        r = nodes[1][1][-1]
+        print abs(l - r).sum()
+        if np.abs(l - pshow).sum() < np.abs(r - pshow).sum():
+            print "Left"
+        else:
+            print "Right"
 
 class HopfieldNetwork(object):
     """
@@ -205,21 +213,22 @@ def HNTest():
     plt.close('all')
 
 def stdp():
-    # import matplotlib.animation as animation
+    """
+        Spike-timing Dependent Plasticity
+        Experiment
+    """
     plt.close('all')
     fig = plt.figure()
     gs = gridspec.GridSpec(5, 2, wspace=0.2)
 
-    shp = 50
+    shp = 50 # Shape of the input cues
     
-    p = resize(rgb2grey(data.horse()), (shp, shp))
-    p2 = resize(rgb2grey(data.astronaut()), (shp, shp))
-    p3 = np.zeros_like(p)
-    p4 = np.ones_like(p)
+    p = resize(rgb2grey(data.horse()), (shp, shp)) # Cue A
+    p2 = resize(rgb2grey(data.astronaut()), (shp, shp)) # Cue B
+    p3 = np.zeros_like(p) # Hidden Cue L
+    p4 = np.ones_like(p) # Hidden Cue R
 
-    steps = 50
-    pshow=p
-
+    # Connections dictionary ((INPUT LAYER, ID), (OUTPUT LAYER, ID)): TIME OFFSET
     connections= {
                    ((0, 0),(1, 0)): 0,
                    ((0, 1),(1, 1)): 0,
@@ -231,9 +240,16 @@ def stdp():
                    ((1, 1),(0, 0)): 0,
                    ((1, 1),(0, 1)): 0}
 
+    # Instantiate STDPNetwork
     sn = STDPNetwork(nr_units=shp, A_n=1.05, A_p=1.05, initialize=np.zeros, connections=connections)
+
+    # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])
+
+    pshow=p # Cue for recall step
+    steps = 50 # Number of time steps
     nodes = sn.recall(pshow, nr_iters=steps, time=20)
+    sn.select_action(nodes, pshow)
 
     # Plot first cue
     ax1 = fig.add_subplot(gs[0, 0])
@@ -268,14 +284,6 @@ def stdp():
     ax7 = fig.add_subplot(gs[3, 0])
     ax7.axis('off')
     ax7.imshow(nodes[1][0][-1], cmap='jet')
-
-    l = nodes[1][0][-1]
-    r = nodes[1][1][-1]
-    print abs(l - r).sum()
-    if np.abs(l - pshow).sum() < np.abs(r - pshow).sum():
-        print "Left"
-    else:
-        print "Right"
 
     ax8 = fig.add_subplot(gs[3, 1])
     ax8.axis('off')
