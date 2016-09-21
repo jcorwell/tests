@@ -179,7 +179,7 @@ class Weights(np.ndarray):
     def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
         deltap = A_p*offset
         deltan = -A_n*offset
-        print deltap, deltan
+        # print deltap, deltan
         self[self > 0.5] += deltap
         self[self < 0.5] += deltan
         return self
@@ -234,8 +234,6 @@ def stdp():
         Spike-timing Dependent Plasticity TEST
     '''
     plt.close('all')
-    fig = plt.figure(figsize=(10,10))
-    gs = gridspec.GridSpec(5, 2, wspace=0.2, hspace=1.)
 
     shp = 50 # Shape of the input cues
     
@@ -251,8 +249,8 @@ def stdp():
     connections = {
                    ((0, 0),(1, 0)): 0,
                    ((0, 1),(1, 1)): 0,
-                   ((0, 0),(1, 1)): 10,
-                   ((0, 1),(1, 0)): 10,
+                   ((0, 0),(1, 1)): 1,
+                   ((0, 1),(1, 0)): 0,
 
                    ((1, 0),(0, 0)): 0,
                    ((1, 0),(0, 1)): 0,
@@ -265,60 +263,62 @@ def stdp():
     # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])
 
-    PSHOW = p # Cue for recall step
-    if (PSHOW == p2).all(): fig.suptitle("Astronaut")
-    elif (PSHOW == p).all(): fig.suptitle("Horse")
-    steps = 50 # Number of time steps
-    nodes = sn.recall(PSHOW, nr_iters=steps, time=20)
-    sn.select_action(nodes, PSHOW)
+    for PSHOW in [p, p2]: # Cue for recall step
+        fig = plt.figure(figsize=(10,10))
+        gs = gridspec.GridSpec(5, 2, wspace=0.2, hspace=1.)
+        if (PSHOW == p2).all(): fig.suptitle("Astronaut")
+        elif (PSHOW == p).all(): fig.suptitle("Horse")
+        steps = 50 # Number of time steps
+        nodes = sn.recall(PSHOW, nr_iters=steps, time=20)
+        sn.select_action(nodes, PSHOW)
 
-    # Plot first cue
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_title("Cue A")
-    ax1.axis('off')
-    ax1.imshow(p, cmap='jet', interpolation='none')
+        # Plot first cue
+        ax1 = fig.add_subplot(gs[0, 0])
+        ax1.set_title("Cue A")
+        ax1.axis('off')
+        ax1.imshow(p, cmap='jet', interpolation='none')
 
-    # Plot second cue
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax2.set_title("Cue B")
-    ax2.axis('off')
-    ax2.imshow(p2, cmap='jet', interpolation='none')
+        # Plot second cue
+        ax2 = fig.add_subplot(gs[0, 1])
+        ax2.set_title("Cue B")
+        ax2.axis('off')
+        ax2.imshow(p2, cmap='jet', interpolation='none')
 
-    # Left State
-    ax3 = fig.add_subplot(gs[1, 0])
-    ax3.set_title("Hidden L Cue")
-    ax3.axis('off')
-    ax3.imshow(p3, interpolation='none', vmin=0, vmax=1)
+        # Left State
+        ax3 = fig.add_subplot(gs[1, 0])
+        ax3.set_title("Hidden L Cue")
+        ax3.axis('off')
+        ax3.imshow(p3, interpolation='none', vmin=0, vmax=1)
 
-    # Right State
-    ax4 = fig.add_subplot(gs[1, 1])
-    ax4.set_title("Hidden R Cue")
-    ax4.axis('off')
-    ax4.imshow(p4, cmap='jet', interpolation='none')
+        # Right State
+        ax4 = fig.add_subplot(gs[1, 1])
+        ax4.set_title("Hidden R Cue")
+        ax4.axis('off')
+        ax4.imshow(p4, cmap='jet', interpolation='none')
 
-    # Plot first layer
-    ax5 = fig.add_subplot(gs[2, 0])
-    ax5.set_title("Sensory Layer: A")
-    ax5.axis('off')
-    ax5.imshow(nodes[0][0][-1], cmap='jet')
+        # Plot first layer
+        ax5 = fig.add_subplot(gs[2, 0])
+        ax5.set_title("Sensory Layer: A")
+        ax5.axis('off')
+        ax5.imshow(nodes[0][0][-1], cmap='jet')
 
-    ax6 = fig.add_subplot(gs[2, 1])
-    ax6.set_title("Sensory Layer: B")
-    ax6.axis('off')
-    ax6.imshow(nodes[0][1][-1], cmap='jet', interpolation='none')
+        ax6 = fig.add_subplot(gs[2, 1])
+        ax6.set_title("Sensory Layer: B")
+        ax6.axis('off')
+        ax6.imshow(nodes[0][1][-1], cmap='jet', interpolation='none')
 
-    # Plot second layer
-    ax7 = fig.add_subplot(gs[3, 0])
-    ax7.set_title("Hidden Layer: L")
-    ax7.axis('off')
-    ax7.imshow(nodes[1][0][-1], cmap='jet', interpolation='none')
+        # Plot second layer
+        ax7 = fig.add_subplot(gs[3, 0])
+        ax7.set_title("Hidden Layer: L")
+        ax7.axis('off')
+        ax7.imshow(nodes[1][0][-1], cmap='jet', interpolation='none')
 
-    ax8 = fig.add_subplot(gs[3, 1])
-    ax8.set_title("Hidden Layer: R")
-    ax8.axis('off')
-    ax8.imshow(nodes[1][1][-1],cmap='jet', interpolation='none')
+        ax8 = fig.add_subplot(gs[3, 1])
+        ax8.set_title("Hidden Layer: R")
+        ax8.axis('off')
+        ax8.imshow(nodes[1][1][-1],cmap='jet', interpolation='none')
 
-    plt.show()
+    # plt.show()
 
     
 if __name__ == '__main__':
