@@ -281,6 +281,7 @@ def stdp():
         elif (PSHOW == p2).all(): fig.suptitle("B")
         steps = 75 # Number of time steps
         nodes = sn.recall(PSHOW, nr_iters=steps, time=steps*2)
+
         sn.select_action(nodes, PSHOW)
 
         # Plot first cue
