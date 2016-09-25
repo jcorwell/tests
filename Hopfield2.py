@@ -73,7 +73,6 @@ class STDPNetwork(object):
         A_n = self._get("A_n")
         A_p = self._get("A_p")
         for connk, offset in self._get("connections").items():
-            # print connk
             s0, s1 = connk
             preHn = self.Layers[s0[0]][s0[1]]
             postHn = self.Layers[s1[0]][s1[1]]
@@ -132,7 +131,7 @@ class HopfieldNetwork(object):
     def stdp_session(self, p, A_n, A_p, HN_pre, time=5, steps=5, kind="traditional", offset=0):
         Weights_pre = HN_pre.Weights
         self.Weights.stdp_update(A_n, A_p, self.Weights, Weights_pre, offset)
-        self.Nodes.Integrate(p, np.linspace(offset, time, steps), self.Weights)
+        self.Nodes.Integrate(p, np.linspace(offset, offset+time, steps), self.Weights)
 
 
 class Nodes(np.ndarray):
@@ -170,7 +169,7 @@ class Weights(np.ndarray):
         elif kind == "traditional":
             for i in range(len(p)):
                 for j in range(len(p)):
-                    self[i, j] += p[i, j]*p[i, j]
+                    self[i, j] += p[j, i]*p[i, j]
         return self
 
     def update_weights(self, u, p, S=0.8, D=1.25):
@@ -188,155 +187,8 @@ class Weights(np.ndarray):
         return self
 
     def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
-        self -= self.gamma*self
         deltap = A_p*(1. - offset)
-        deltan = -A_n*offset
-        self += (deltap + deltan)*Weightspre
+        deltan = -A_n*abs(1. - offset)
+        delta = deltap + deltan
+        self += delta*Weightspre - self.gamma*self
         return self
-        
-
-def HNTest():
-    '''
-        HOPFIELD NETWORK TEST
-    '''
-    plt.close("all")
-    fig = plt.figure()
-    gs = gridspec.GridSpec(2, 2, wspace=0.2)
-
-    # Initialize Hopfield Network
-    shp = 50  # (shp, shp) is shape of input patterns
-    hn = HopfieldNetwork(nr_units=shp) # hopfield network instance
-    
-    # Load patterns
-    pattern = resize(rgb2grey(data.horse()), (shp, shp))
-    pattern2 = resize(rgb2grey(data.astronaut()), (shp, shp))
-
-    # Plot first cue
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax1.imshow(pattern, interpolation='none', cmap='jet')
-
- ########################################################
-    """ Training and recalling """
-    hn.train(pattern, kind="traditional") # Train
-    hn.train(pattern2, kind='traditional') # Train
-
-    recov = hn.recall(pattern, steps=5) # Recall
-    recov2 = hn.recall(pattern2, steps=5) # Recall
- ########################################################
-
-    # Plot first recall
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax2.imshow(recov, interpolation='none', cmap='jet')
-
-    # Plot second cue
-    ax3 = fig.add_subplot(gs[1, 0])
-    ax3.imshow(pattern2, interpolation='none', cmap='jet')
-
-    # Plot second recall
-    ax4 = fig.add_subplot(gs[1, 1])
-    ax4.imshow(recov2, interpolation='none', cmap='jet')
-
-    plt.show()
-    plt.close('all')
-
-def stdp():
-    ''' 
-        Spike-timing Dependent Plasticity TEST
-    '''
-    plt.close('all')
-
-    shp = 20 # Shape of the input cues
-    
-    p = resize(rgb2grey(data.horse()), (shp, shp)) # Cue A
-    p2 = resize(rgb2grey(data.astronaut()), (shp, shp)) # Cue B
-    # np.random.seed(114)
-    # p = np.random.random((shp,shp))
-    # p2 = np.random.random((shp,shp))
-    p3 = np.zeros_like(p) # Hidden Cue L
-    p4 = np.zeros_like(p) # Hidden Cue R
-
-    # Connections dictionary ((INPUT LAYER, ID), (OUTPUT LAYER, ID)): TIME OFFSET
-    connections = {
-                   ((0, 0),(1, 0)): 10,
-                   ((0, 1),(1, 1)): 10,
-                   ((0, 0),(1, 1)): 0,
-                   ((0, 1),(1, 0)): 0,
-
-                   ((1, 0),(0, 0)): 10,
-                   ((1, 1),(0, 1)): 10,
-                   ((1, 0),(0, 1)): 0,
-                   ((1, 1),(0, 0)): 0}
-
-    # Instantiate STDPNetwork
-    sn = STDPNetwork(nr_units=shp, A_n=0.01, A_p=0.05, gamma=0.5, initialize=np.zeros, connections=connections)
-
-    # Train Network on patterns (each pattern is shown only to its respective layer)
-    sn.train([[p, p2], [p3, p4]])
-
-    # PSHOW = p # Cue for recall step
-    for PSHOW in [p, p2]:
-        fig = plt.figure(figsize=(10,10))
-        gs = gridspec.GridSpec(5, 2, wspace=0.2, hspace=1.)
-        if (PSHOW == p).all(): fig.suptitle("A")
-        elif (PSHOW == p2).all(): fig.suptitle("B")
-        steps = 75 # Number of time steps
-        nodes = sn.recall(PSHOW, nr_iters=steps, time=steps*2)
-
-        sn.select_action(nodes, PSHOW)
-
-        # Plot first cue
-        ax1 = fig.add_subplot(gs[0, 0])
-        ax1.set_title("Cue A")
-        ax1.axis('off')
-        ax1.imshow(p, cmap='jet', interpolation='none')
-
-        # Plot second cue
-        ax2 = fig.add_subplot(gs[0, 1])
-        ax2.set_title("Cue B")
-        ax2.axis('off')
-        ax2.imshow(p2, cmap='jet', interpolation='none')
-
-        # Left State
-        ax3 = fig.add_subplot(gs[1, 0])
-        ax3.set_title("Hidden L Cue")
-        ax3.axis('off')
-        ax3.imshow(p3, interpolation='none', vmin=0, vmax=1)
-
-        # Right State
-        ax4 = fig.add_subplot(gs[1, 1])
-        ax4.set_title("Hidden R Cue")
-        ax4.axis('off')
-        ax4.imshow(p4, cmap='jet', interpolation='none', vmin=0, vmax=1)
-
-        # Plot first layer
-        ax5 = fig.add_subplot(gs[2, 0])
-        ax5.set_title("Sensory Layer: A")
-        ax5.axis('off')
-        ax5.imshow(nodes[0][0][-1], cmap='jet', interpolation='none')
-
-        ax6 = fig.add_subplot(gs[2, 1])
-        ax6.set_title("Sensory Layer: B")
-        ax6.axis('off')
-        ax6.imshow(nodes[0][1][-1], cmap='jet', interpolation='none')
-
-        # Plot second layer
-        ax7 = fig.add_subplot(gs[3, 0])
-        ax7.set_title("Hidden Layer: L")
-        ax7.axis('off')
-        ax7.imshow(nodes[1][0][-1], cmap='jet', interpolation='none')
-
-        ax8 = fig.add_subplot(gs[3, 1])
-        ax8.set_title("Hidden Layer: R")
-        ax8.axis('off')
-        ax8.imshow(nodes[1][1][-1],cmap='jet', interpolation='none')
-
-    plt.show()
-
-    
-if __name__ == '__main__':
-    ''' This is where you'll run experiments.
-    '''
-    stdp()
-    #HNTest()
-
-# os._exit(0)
