@@ -38,7 +38,8 @@ class STDPNetwork(object):
                            ((1, 1),(0, 0)): 3.0,
                            ((1, 1),(0, 1)): 1.0},
             "setup_dict": {0: 2, 1: 2},
-            "nr_units": 10
+            "nr_units": 10,
+            "thresh": 0.5
         }
         self.setup_opts(kwargs)
         self.setup_layers()
@@ -60,7 +61,8 @@ class STDPNetwork(object):
                                                       nr_units=self._get("nr_units"),
                                                       kind=self._get('kind'), 
                                                       id_=(k, vi),
-                                                      gamma=self._get("gamma")), range(0, v))
+                                                      gamma=self._get("gamma"),
+                                                      thresh=self._get("thresh")), range(0, v))
             self.Layers.update({k: subpools})
 
     def train(self, patterns):
@@ -82,12 +84,9 @@ class STDPNetwork(object):
     def select_action(self, nodes, pshow):
         l = nodes[1][0][-1]
         r = nodes[1][1][-1]
-        # print abs(l - r).sum()
         if np.abs(l - pshow).sum() < np.abs(r - pshow).sum():
-        # if l.sum() > r.sum():
             print "Left"
         elif np.abs(l - pshow).sum() > np.abs(r - pshow).sum():
-        # elif l.sum() < r.sum():
             print "Right"
         else:
             print "No choice"
@@ -105,14 +104,20 @@ class HopfieldNetwork(object):
                     "nr_units": 10,
                     "id_": (0, 0),
                     "initialize": np.zeros,
-                    "gamma": 0.5
+                    "gamma": 0.5,
+                    "thresh": 0.5
                     }
         self.setup_opts(kwargs)
         self.id_ = self.opt['id_']
         shape = tuple([self.opt["nr_units"]]*2)
-        self.Weights = Weights(self.opt["initialize"](shape))
-        self.Weights.gamma = self.opt['gamma']
-        self.Nodes = Nodes(self.opt['initialize'](shape))
+        self.Weights = Weights(self.opt["initialize"](shape), 
+                               gamma=self._get("gamma"))
+        # self.Weights.gamma = self.opt['gamma']
+        self.Nodes = Nodes(self.opt['initialize'](shape),
+                           thresh=self._get("thresh"))
+
+    def _get(self, kw):
+        return self.opt[kw]
 
     def setup_opts(self, kwargs):
         for k, v in kwargs.items():
@@ -135,15 +140,17 @@ class HopfieldNetwork(object):
 
 
 class Nodes(np.ndarray):
-    def __new__(cls, a):
+    def __new__(cls, a, thresh=0.5):
         obj = np.asarray(a).view(cls)
         obj.States = list()
+        obj.thresh = thresh
         return obj
 
     def Integrate(self, p, tspace, weights):
         from scipy.integrate import odeint
         def du(u, t, p):
             u = u.reshape(self.shape)
+            if self.thresh is not None: u = u > self.thresh
             p1 = np.dot(weights, u)
             sum1 = p1 + p
             du_ = -u + 0.5*(1.00 + np.tanh(sum1))
@@ -157,9 +164,9 @@ class Nodes(np.ndarray):
 
 
 class Weights(np.ndarray):
-    def __new__(cls, a):
+    def __new__(cls, a, gamma=0.5):
         obj = np.asarray(a).view(cls)
-        obj.gamma = 0.5
+        obj.gamma = gamma
         return obj
 
     def compute_weights(self, p, kind="pearson"):
@@ -169,7 +176,7 @@ class Weights(np.ndarray):
         elif kind == "traditional":
             for i in range(len(p)):
                 for j in range(len(p)):
-                    self[i, j] += p[j, i]*p[i, j]
+                    self[i, j] += p[i, j]*p[i, j]
         return self
 
     def update_weights(self, u, p, S=0.8, D=1.25):
@@ -188,7 +195,8 @@ class Weights(np.ndarray):
 
     def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
         deltap = A_p*(1. - offset)
-        deltan = -A_n*abs(1. - offset)
+        deltan = -A_n*(1. - offset)**2
         delta = deltap + deltan
-        self += delta*Weightspre - self.gamma*self
+        print "Delta_w: ", delta
+        self += (delta*Weightspre - self.gamma*self)
         return self

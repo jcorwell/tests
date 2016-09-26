@@ -62,6 +62,11 @@ def stdp():
     
     p = resize(rgb2grey(data.horse()), (shp, shp)) # Cue A
     p2 = resize(rgb2grey(data.astronaut()), (shp, shp)) # Cue B
+    pthresh = threshold_otsu(p)
+    p2thresh = threshold_otsu(p2)
+    p = p > pthresh
+    p2 = p2 > p2thresh
+
     # np.random.seed(14)
     # p = np.random.random((shp,shp))
     # p2 = np.random.random((shp,shp))
@@ -83,10 +88,13 @@ def stdp():
                    ((1, 1),(0, 0)): 10}
 
     # Instantiate STDPNetwork
-    sn = STDPNetwork(nr_units=shp, A_n=0.1, A_p=0.1, gamma=0.1, initialize=np.zeros, connections=connections)
+    sn = STDPNetwork(nr_units=shp, A_n=0.1, A_p=0.1, gamma=0.1, initialize=np.zeros, 
+                    connections=connections, thresh=None) #thresh=(pthresh+p2thresh)/2.)
 
     # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])
+
+    steps = 30 # Number of time steps
     
     # Cue for recall step
     for PSHOW in [p, p2]:
@@ -94,10 +102,10 @@ def stdp():
         gs = gridspec.GridSpec(5, 2, wspace=0.2, hspace=1.)
         if (PSHOW == p).all(): fig.suptitle("A")
         elif (PSHOW == p2).all(): fig.suptitle("B")
-        steps = 30 # Number of time steps
 
         # Recall given cue
         nodes = sn.recall(PSHOW, nr_iters=steps, time=steps*2)
+
         # Select action
         sn.select_action(nodes, PSHOW)
 
