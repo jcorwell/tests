@@ -196,9 +196,10 @@ class Weights(np.ndarray):
         return self
 
     def stdp_update(self, A_n, A_p, Weights0, Weightspre, offset):
-        deltap = A_p*(1. - offset)
-        deltan = -A_n*(1. - offset)**2
-        delta = deltap + deltan
+        if offset < 0:
+            delta = A_p*(offset)
+        elif offset >= 0:
+            delta = -A_n*(-1.*offset)
         print "Delta_w: ", delta
-        self += (delta*Weightspre*Weightspre.T - self.gamma*self)
+        self += (delta*(Weightspre*Weightspre.T) - self.gamma*self)
         return self
