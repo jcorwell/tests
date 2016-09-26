@@ -84,8 +84,8 @@ def stdp():
 
                    ((1, 0),(0, 0)): 10.,
                    ((1, 1),(0, 1)): 10.,
-                   ((1, 0),(0, 1)): -10.,
-                   ((1, 1),(0, 0)): -10.}
+                   ((1, 1),(0, 0)): -10.,
+                   ((1, 0),(0, 1)): -10.}
 
     # Instantiate STDPNetwork
     sn = STDPNetwork(nr_units=shp, A_n=0.001, A_p=0.1, gamma=0.01, initialize=np.zeros, 
