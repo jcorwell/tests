@@ -77,19 +77,19 @@ def stdp():
     # Connections dictionary 
     # ((INPUT LAYER #, ID#), (OUTPUT LAYER #, ID#)): TIME OFFSET
     connections = {
-                   ((0, 0),(1, 0)): 0,
-                   ((0, 1),(1, 1)): 0,
-                   ((0, 0),(1, 1)): 10,
-                   ((0, 1),(1, 0)): 10,
+                   ((0, 0),(1, 0)): 10,
+                   ((0, 1),(1, 1)): 10,
+                   ((0, 0),(1, 1)): 0,
+                   ((0, 1),(1, 0)): 0,
 
                    ((1, 0),(0, 0)): 0,
                    ((1, 1),(0, 1)): 0,
-                   ((1, 0),(0, 1)): 10,
-                   ((1, 1),(0, 0)): 10}
+                   ((1, 0),(0, 1)): 0,
+                   ((1, 1),(0, 0)): 0}
 
     # Instantiate STDPNetwork
-    sn = STDPNetwork(nr_units=shp, A_n=0.1, A_p=0.1, gamma=0.1, initialize=np.zeros, 
-                    connections=connections, thresh=None) #thresh=(pthresh+p2thresh)/2.)
+    sn = STDPNetwork(nr_units=shp, A_n=0.01, A_p=0.001, gamma=0.001, initialize=np.zeros, 
+                    connections=connections, thresh=pthresh)
 
     # Train Network on patterns (each pattern is shown only to its respective layer)
     sn.train([[p, p2], [p3, p4]])

@@ -39,7 +39,7 @@ class STDPNetwork(object):
                            ((1, 1),(0, 1)): 1.0},
             "setup_dict": {0: 2, 1: 2},
             "nr_units": 10,
-            "thresh": 0.5
+            "thresh": None
         }
         self.setup_opts(kwargs)
         self.setup_layers()
@@ -105,7 +105,7 @@ class HopfieldNetwork(object):
                     "id_": (0, 0),
                     "initialize": np.zeros,
                     "gamma": 0.5,
-                    "thresh": 0.5
+                    "thresh": None
                     }
         self.setup_opts(kwargs)
         self.id_ = self.opt['id_']
@@ -140,7 +140,7 @@ class HopfieldNetwork(object):
 
 
 class Nodes(np.ndarray):
-    def __new__(cls, a, thresh=0.5):
+    def __new__(cls, a, thresh=None):
         obj = np.asarray(a).view(cls)
         obj.States = list()
         obj.thresh = thresh
@@ -150,13 +150,15 @@ class Nodes(np.ndarray):
         from scipy.integrate import odeint
         def du(u, t, p):
             u = u.reshape(self.shape)
-            if self.thresh is not None: u = u > self.thresh
             p1 = np.dot(weights, u)
             sum1 = p1 + p
             du_ = -u + 0.5*(1.00 + np.tanh(sum1))
             return du_.flatten()
         u = np.array(self.flatten())
         integ = odeint(du, u, tspace, args=(p,))
+        if self.thresh is not None: 
+            integ[integ >= self.thresh] = 1.
+            integ[integ < self.thresh] = 0.
         integ = integ[-1].reshape(self.shape)
         self.States.append(integ)
         self = integ
@@ -198,5 +200,5 @@ class Weights(np.ndarray):
         deltan = -A_n*(1. - offset)**2
         delta = deltap + deltan
         print "Delta_w: ", delta
-        self += (delta*Weightspre - self.gamma*self)
+        self += (delta*Weightspre*Weightspre.T - self.gamma*self)
         return self
