@@ -130,7 +130,7 @@ class HopfieldNetwork(object):
 
     def recall(self, p, steps=10, S=0.8, D=1.25, t0=0):
         gamma = self.opt['gamma']
-        self.Weights.update_weights(self.Nodes, p, gamma=gamma, S=S, D=D)
+        self.Weights.update_weights(self.Nodes, p, S=S, D=D)
         return self.Nodes.Integrate(p, np.linspace(t0, steps, steps), self.Weights)
 
     def stdp_session(self, p, A_n, A_p, HN_pre, time=5, steps=5, kind="traditional", offset=0):

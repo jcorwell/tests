@@ -161,5 +161,5 @@ def stdp():
 if __name__ == '__main__':
     ''' This is where you'll run experiments.
     '''
-    stdp()
-    #HNTest()
+    # stdp()
+    HNTest()
